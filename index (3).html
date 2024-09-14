@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randomness Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .hidden { display: none; }
+        #cards-container { margin-top: 20px; }
+        #scores-list { margin-top: 20px; }
+        select, button { margin-right: 10px; }
+        .player-card { margin-bottom: 10px; }
+        .container { margin-bottom: 20px; }
+        .score-container { margin-top: 20px; }
+        .score-container label { display: block; margin-top: 10px; }
+        #rules { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Randomness Game</h1>
+
+    <div id="rules">
+        <h2>Game Rules</h2>
+        <h3>Game Setup:</h3>
+        <ul>
+            <li>The game shuffles all the decks (Scenario, Character, Place, and Wildcard Cards)—so the chaos is always fresh!</li>
+        </ul>
+
+        <h3>Start a Round:</h3>
+        <ul>
+            <li>The game reveals one <strong>Scenario</strong> and one <strong>Place</strong> Card—setting the scene for your next hilarious roleplay.</li>
+            <li>Each player receives a <strong>Character Card</strong>—this is your new identity!</li>
+            <li>One random player is gifted (or cursed) with a <strong>Wildcard Card</strong>—get ready for the madness!</li>
+        </ul>
+
+        <h3>Playing the Round:</h3>
+        <ul>
+            <li>Time to shine! You and your fellow actors have <strong>2 minutes</strong> to perform an improvised conversation based on your character, scenario, and place cards.</li>
+            <li>If you have a <strong>Wildcard</strong>, follow its quirky rule while staying in character!</li>
+            <li>The twist? Only the <strong>players talking</strong> are at risk of losing points! Those listening can laugh, giggle, or snicker freely—so the pressure's all on the actors!</li>
+        </ul>
+
+        <h3>Scoring:</h3>
+        <ul>
+            <li>After the round, points are awarded for:
+                <ul>
+                    <li><strong>Not laughing</strong> while you’re acting.</li>
+                    <li>Staying fully in <strong>character</strong>.</li>
+                    <li>Following the <strong>Wildcard</strong> rule if you have it.</li>
+                </ul>
+            </li>
+            <li>If you're acting and crack up? You don’t get a point! But listeners can laugh all they want—so bring your A-game and don’t break!</li>
+        </ul>
+
+        <h3>Winning the Game:</h3>
+        <ul>
+            <li>Play until someone reaches the target number of points or until a set number of rounds have passed.</li>
+            <li>The player with the most points becomes the reigning champion of improv!</li>
+        </ul>
+
+        <p>Now go forth and act your heart out while everyone else tries to make you lose your cool! 🎭 😆</p>
+    </div>
+
+    <div class="container">
+        <label for="player-count">Select number of players:</label>
+        <select id="player-count">
+            <option value="1">1 Player</option>
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+        </select>
+        <button id="start-button">Start Game</button>
+    </div>
+
+    <div id="character-selector-container" class="hidden">
+        <h2>Select Players to Award Points:</h2>
+        <select id="character-selector" multiple></select>
+        <button id="award-points-button">Award Points</button>
+    </div>
+
+    <div id="cards-container" class="hidden">
+        <div id="scenario-card"></div>
+        <div id="place-card"></div>
+        <div id="character-card"></div>
+        <div id="wildcard-card"></div>
+        <button id="end-round-button">End Round</button>
+    </div>
+
+    <ul id="scores-list"></ul>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const scenarios = [
+                "Selling candy disguised as something illegal.",
+                "Confessing you forgot an important anniversary.",
+                "Telling your boss you accidentally set their house on fire.",
+                "Pretending to be an alien on vacation.",
+                "Explaining why you’re late with an outrageous excuse.",
+                "Negotiating with a dragon for safe passage.",
+                "Ordering food in a foreign language you don’t know.",
+                "Returning an item to a store with an impossible story.",
+                // Add more scenarios here...
+            ];
+
+            const places = [
+                "In space",
+                "On a pirate ship",
+                "In a haunted house",
+                "In a medieval castle",
+                "In a circus",
+                "Underwater in a submarine",
+                "In a bustling market",
+                "In a futuristic city",
+                // Add more places here...
+            ];
+
+            const characters = [
+                "Spongebob Squarepants",
+                "Darth Vader",
+                "Taylor Swift",
+                "Jack Black",
+                "Scooby-Doo",
+                "The Queen of England",
+                "A talking cat",
+                "A superhero",
+                "A mad scientist",
+                "A famous chef",
+                // Add more characters here...
+            ];
+
+            const wildcards = [
+                "Clap your hands before speaking.",
+                "Say 'uh' before every sentence.",
+                "Snap your fingers after every sentence.",
+                "Speak in a pirate accent.",
+                "Pretend you're a robot.",
+                "Speak in rhymes.",
+                "Use only questions in your sentences.",
+                "Act as if you're invisible.",
+                // Add more wildcards here...
+            ];
+
+            let currentPlayerCount = 1;
+            let playerScores = [];
+            let assignedCharacters = [];
+            let scenario = "";
+            let place = "";
+            let wildcard = "";
+            let currentRoundCharacter = "";
+
+            const playerCountSelect = document.getElementById('player-count');
+            const startButton = document.getElementById('start-button');
+            const cardsContainer = document.getElementById('cards-container');
+            const characterSelectorContainer = document.getElementById('character-selector-container');
+            const characterSelector = document.getElementById('character-selector');
+            const scenarioCard = document.getElementById('scenario-card');
+            const placeCard = document.getElementById('place-card');
+            const characterCard = document.getElementById('character-card');
+            const wildcardCard = document.getElementById('wildcard-card');
+            const scoresList = document.getElementById('scores-list');
+            const endRoundButton = document.getElementById('end-round-button');
+            const awardPointsButton = document.getElementById('award-points-button');
+            const rulesSection = document.getElementById('rules');
+
+            startButton.addEventListener('click', () => {
+                currentPlayerCount = parseInt(playerCountSelect.value);
+                initializeGame();
+                showGameUI();
+                rulesSection.classList.add('hidden'); // Hide rules when game starts
+            });
+
+            awardPointsButton.addEventListener('click', () => {
+                awardPoints();
+            });
+
+            endRoundButton.addEventListener('click', () => {
+                endRound();
+            });
+
+            function initializeGame() {
+                // Initialize player scores
+                playerScores = Array(currentPlayerCount).fill(0);
+
+                // Randomly assign characters to players
+                const shuffledCharacters = [...characters].sort(() => 0.5 - Math.random());
+                assignedCharacters = shuffledCharacters.slice(0, currentPlayerCount);
+
+                // Setup character selector
+                characterSelector.innerHTML = '';
+                for (let i = 0; i < currentPlayerCount; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Player ${i + 1}: ${assignedCharacters[i]}`;
+                    characterSelector.appendChild(option);
+                }
+
+                // Generate round content
+                scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                place = places[Math.floor(Math.random() * places.length)];
+                wildcard = wildcards[Math.floor(Math.random() * wildcards.length)];
+                currentRoundCharacter = assignedCharacters[Math.floor(Math.random() * assignedCharacters.length)];
+
+                // Update UI with new cards
+                updateCardDisplay();
+                updateScoresList();
+            }
+
+            function showGameUI() {
+                characterSelectorContainer.classList.remove('hidden');
+                cardsContainer.classList.remove('hidden');
+            }
+
+            function awardPoints() {
+                const selectedPlayers = Array.from(characterSelector.selectedOptions).map(option => parseInt(option.value));
+
+                selectedPlayers.forEach(playerIndex => {
+                    if (playerIndex >= 0 && playerIndex < playerScores.length) {
+                        playerScores[playerIndex]++;
+                    }
+                });
+
+                updateScoresList();
+            }
+
+            function endRound() {
+                // Generate new round content
+                scenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+                place = places[Math.floor(Math.random() * places.length)];
+                wildcard = wildcards[Math.floor(Math.random() * wildcards.length)];
+
+                // Randomly select a new character from the assigned ones for the next round
+                currentRoundCharacter = assignedCharacters[Math.floor(Math.random() * assignedCharacters.length)];
+
+                // Update UI with new cards
+                updateCardDisplay();
+            }
+
+            function updateCardDisplay() {
+                scenarioCard.textContent = `Scenario: ${scenario}`;
+                placeCard.textContent = `Place: ${place}`;
+                characterCard.textContent = `Character: ${currentRoundCharacter}`;
+                wildcardCard.textContent = `Wildcard: ${wildcard}`;
+            }
+
+            function updateScoresList() {
+                scoresList.innerHTML = '';
+                playerScores.forEach((score, index) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `Player ${index + 1}: ${score} points`;
+                    scoresList.appendChild(listItem);
+                });
+            }
+        });
+    </script>
+</body>
+</html>
